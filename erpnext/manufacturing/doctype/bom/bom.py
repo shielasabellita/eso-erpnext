@@ -1,13 +1,16 @@
 # Copyright (c) 2022, Frappe Technologies Pvt. Ltd. and Contributors
 # License: GNU General Public License v3. See license.txt
 
+from __future__ import unicode_literals
 import functools
 import re
 from collections import deque
 from operator import itemgetter
 from typing import Dict, List
-
 import frappe
+import frappe, erpnext
+import json
+from frappe.utils import cint, cstr, flt
 from frappe import _
 from frappe.core.doctype.version.version import get_diff
 from frappe.model.mapper import get_mapped_doc
@@ -364,19 +367,18 @@ class BOM(WebsiteGenerator):
 					rate = flt(self.get_bom_unitcost(arg["bom_no"])) * (arg.get("conversion_factor") or 1)
 				else:
 					rate = get_bom_item_rate(arg, self)
-
-					if not rate:
-						if self.rm_cost_as_per == "Price List":
-							frappe.msgprint(
-								_("Price not found for item {0} in price list {1}").format(
-									arg["item_code"], self.buying_price_list
-								),
-								alert=True,
-							)
-						else:
-							frappe.msgprint(
-								_("{0} not found for item {1}").format(self.rm_cost_as_per, arg["item_code"]), alert=True
-							)
+					# if not rate:
+					# 	if self.rm_cost_as_per == "Price List":
+					# 		frappe.msgprint(
+					# 			_("Price not found for item {0} in price list {1}").format(
+					# 				arg["item_code"], self.buying_price_list
+					# 			),
+					# 			alert=True,
+					# 		)
+					# 	else:
+					# 		frappe.msgprint(
+					# 			_("{0} not found for item {1}").format(self.rm_cost_as_per, arg["item_code"]), alert=True
+					# 		)
 		return flt(rate) * flt(self.plc_conversion_rate or 1) / (self.conversion_rate or 1)
 
 	@frappe.whitelist()
@@ -991,7 +993,6 @@ def get_bom_items_as_dict(
 	fetch_qty_in_stock_uom=True,
 ):
 	item_dict = {}
-
 	# Did not use qty_consumed_per_unit in the query, as it leads to rounding loss
 	query = """select
 				bom_item.item_code,
@@ -1031,14 +1032,12 @@ def get_bom_items_as_dict(
 			where_conditions="",
 			is_stock_item=is_stock_item,
 			qty_field="stock_qty",
-			select_columns=""", bom_item.source_warehouse, bom_item.operation,
-				bom_item.include_item_in_manufacturing, bom_item.description, bom_item.rate, bom_item.sourced_by_supplier,
-				(Select idx from `tabBOM Item` where item_code = bom_item.item_code and parent = %(parent)s limit 1) as idx""",
-		)
+			select_columns = """, bom_item.source_warehouse, bom_item.operation,
+				bom_item.include_item_in_manufacturing, bom_item.description,
+				(Select set_alternative_items from `tabBOM Item` where item_code = bom_item.item_code and parent = %(parent)s limit 1) as set_alternative_items,
+				(Select idx from `tabBOM Item` where item_code = bom_item.item_code and parent = %(parent)s limit 1) as idx""")
 
-		items = frappe.db.sql(
-			query, {"parent": bom, "qty": qty, "bom": bom, "company": company}, as_dict=True
-		)
+		items = frappe.db.sql(query, { "parent": bom, "qty": qty, "bom": bom, "company": company }, as_dict=True)
 	elif fetch_scrap_items:
 		query = query.format(
 			table="BOM Scrap Item",
@@ -1055,11 +1054,10 @@ def get_bom_items_as_dict(
 			where_conditions="",
 			is_stock_item=is_stock_item,
 			qty_field="stock_qty" if fetch_qty_in_stock_uom else "qty",
-			select_columns=""", bom_item.uom, bom_item.conversion_factor, bom_item.source_warehouse,
-				bom_item.operation, bom_item.include_item_in_manufacturing, bom_item.sourced_by_supplier,
-				bom_item.description, bom_item.base_rate as rate """,
-		)
-		items = frappe.db.sql(query, {"qty": qty, "bom": bom, "company": company}, as_dict=True)
+			select_columns = """, bom_item.uom, bom_item.conversion_factor, bom_item.source_warehouse,
+				bom_item.idx, bom_item.operation, bom_item.include_item_in_manufacturing,
+				bom_item.description, bom_item.base_rate as rate , bom_item.set_alternative_items """)
+		items = frappe.db.sql(query, { "qty": qty, "bom": bom, "company": company }, as_dict=True)
 
 	for item in items:
 		if item.item_code in item_dict:
@@ -1068,15 +1066,16 @@ def get_bom_items_as_dict(
 			item_dict[item.item_code] = item
 
 	for item, item_details in item_dict.items():
-		for d in [
-			["Account", "expense_account", "stock_adjustment_account"],
-			["Cost Center", "cost_center", "cost_center"],
-			["Warehouse", "default_warehouse", ""],
-		]:
-			company_in_record = frappe.db.get_value(d[0], item_details.get(d[1]), "company")
-			if not item_details.get(d[1]) or (company_in_record and company != company_in_record):
-				item_dict[item][d[1]] = frappe.get_cached_value("Company", company, d[2]) if d[2] else None
-
+		for d in [["Account", "expense_account", "stock_adjustment_account"],
+			["Cost Center", "cost_center", "cost_center"], ["Warehouse", "default_warehouse", ""]]:
+				company_in_record = frappe.db.get_value(d[0], item_details.get(d[1]), "company")
+				if not item_details.get(d[1]) or (company_in_record and company != company_in_record):
+					item_dict[item][d[1]] = frappe.db.get_value("Company", company, d[2]) if d[2] else None
+	# BOM Alternative Items
+	for item, item_details in item_dict.items():
+		item_details['original_item'] = item_details['item_code']
+		if item_details['set_alternative_items']:
+			item_details['alt_items'] = get_bomline_alternative_items(bom, item, None)
 	return item_dict
 
 
@@ -1155,6 +1154,131 @@ def get_children(doctype, parent=None, is_root=False, **filters):
 			bom_item.image = frappe.db.escape(bom_item.image)
 
 		return bom_items
+
+
+
+@frappe.whitelist()
+def setup_bomline_alternative_items(items, bom, parent_item_code):
+	"""
+		Update related BOM Item , BOM Line Alternative Item
+	"""
+
+	bomline_alt_items = frappe.db.sql(
+		"""
+			select name, alt_item
+			from `tabBOM Line Alternative Item`
+		    where bom=%s and item=%s
+		""", (bom, parent_item_code), as_dict=1)
+	items = json.loads(items)
+	current_alt_items = [item['alt_item'] for item in items]
+	delete_items = bomline_alt_items
+	if items:
+		delete_items = [item for item in bomline_alt_items
+				        if item['alt_item'] not in current_alt_items]
+	for item in delete_items:
+		frappe.db.sql(
+		"""
+			delete from `tabBOM Line Alternative Item`
+			where name=%s
+		""",(item['name']))
+		frappe.db.commit()
+
+    # Create or update
+	for item in items:
+		item = frappe._dict(item)
+		docs = frappe.get_all('BOM Line Alternative Item',
+					          filters={'bom': bom, 'item': parent_item_code,
+									   'alt_item': item.alt_item})
+		if not docs:
+			d = frappe.new_doc('BOM Line Alternative Item')
+		else:
+			d = frappe.get_doc("BOM Line Alternative Item", docs[0].name)
+		d.bom = bom
+		d.item = parent_item_code
+		d.alt_item = item.alt_item
+		d.qty = item.qty
+		d.save()
+		frappe.db.commit()
+
+	return frappe.db.sql(
+		"""
+			select alt_item, qty, name
+			from `tabBOM Line Alternative Item`
+		    where bom=%s and item=%s
+		""", (bom, parent_item_code), as_dict=1)
+
+
+@frappe.whitelist()
+def remove_bomline_alt_items(bom, parent_item_code):
+	"""
+		Remove related BOM Item Alternative items
+
+		:params:bom
+		:params:parent_item_code
+	"""
+	bomline_alt_items = frappe.db.sql(
+		"""
+			select name, alt_item
+			from `tabBOM Line Alternative Item`
+		    where bom=%s and item=%s
+		""", (bom, parent_item_code), as_dict=1)
+	for item in bomline_alt_items:
+		frappe.db.sql(
+		"""
+			delete from `tabBOM Line Alternative Item`
+			where name=%s
+		""",(item['name']))
+		frappe.db.commit()
+	return "Deleted related Bomline Alt items"
+
+
+@frappe.whitelist()
+def get_bomline_alternative_items(bom, amended_from, parent_item_code):
+	"""
+		Get related BOM Item, BOM Line Alternative Item
+		In the case of amend process the first time the user asks for the doctype
+		get the list from amended_from even if no save.
+		Its the dom state like just hitting duplicate button with no actions.
+	"""
+	items_bom = frappe.db.sql(
+		"""
+			select alt_item, name, FORMAT(qty, 2) as qty
+			from `tabBOM Line Alternative Item`
+		    where bom=%s and item=%s order by idx
+		""", (bom, parent_item_code), as_dict=1)
+	if len(items_bom) > 0:
+		return items_bom
+	return frappe.db.sql(
+		"""
+			select alt_item, name, FORMAT(qty, 2) as qty
+			from `tabBOM Line Alternative Item`
+		    where bom=%s and item=%s order by idx
+		""", (amended_from, parent_item_code), as_dict=1)
+
+
+@frappe.whitelist()
+def duplicate_alt_items(bom, amended_from):
+	"""
+		Duplicate Alternative during amend process only the first time
+		save is hit
+	"""
+	to_duplicate =  frappe.db.sql(
+		"""
+			select  name
+			from `tabBOM Line Alternative Item`
+		    where bom=%s order by idx
+		""", (amended_from), as_dict=1)
+	for item in to_duplicate:
+		old_item = frappe.get_doc("BOM Line Alternative Item", item['name'])
+		new_alt_item = frappe.new_doc("BOM Line Alternative Item")
+		new_alt_item.item = old_item.item
+		new_alt_item.qty = old_item.qty
+		new_alt_item.alt_item = old_item.alt_item
+		new_alt_item.bom = bom
+		new_alt_item.amended_from_bom = amended_from
+		new_alt_item.save()
+		frappe.db.commit()
+
 
 
 def add_additional_cost(stock_entry, work_order):

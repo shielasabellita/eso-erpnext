@@ -6,19 +6,20 @@
  "engine": "InnoDB",
  "field_order": [
   "operation",
+  "original_item",
   "item_code",
   "source_warehouse",
+  "set_alternative_items",
+  "switch_to_alt",
   "column_break_3",
   "item_name",
   "description",
-  "allow_alternative_item",
-  "include_item_in_manufacturing",
   "qty_section",
   "required_qty",
-  "rate",
-  "amount",
-  "column_break_11",
   "transferred_qty",
+  "allow_alternative_item",
+  "include_item_in_manufacturing",
+  "column_break_11",
   "consumed_qty",
   "available_qty_at_source_warehouse",
   "available_qty_at_wip_warehouse"
@@ -35,7 +36,8 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Item Code",
-   "options": "Item"
+   "options": "Item",
+   "read_only": 1
   },
   {
    "fieldname": "source_warehouse",
@@ -44,6 +46,19 @@
    "in_list_view": 1,
    "label": "Source Warehouse",
    "options": "Warehouse"
+  },
+  {
+   "default": "0",
+   "fieldname": "set_alternative_items",
+   "fieldtype": "Check",
+   "label": "Has Alternative Items ",
+   "read_only": 1
+  },
+  {
+   "depends_on": "eval:doc.set_alternative_items",
+   "fieldname": "switch_to_alt",
+   "fieldtype": "Button",
+   "label": "Switch to Alternative Item"
   },
   {
    "fieldname": "column_break_3",
@@ -70,7 +85,8 @@
    "fieldname": "required_qty",
    "fieldtype": "Float",
    "in_list_view": 1,
-   "label": "Required Qty"
+   "label": "Required Qty",
+   "read_only": 1
   },
   {
    "depends_on": "eval:!parent.skip_transfer",
@@ -117,21 +133,15 @@
    "read_only": 1
   },
   {
-   "fieldname": "rate",
-   "fieldtype": "Currency",
-   "label": "Rate",
-   "read_only": 1
-  },
-  {
-   "fieldname": "amount",
-   "fieldtype": "Currency",
-   "label": "Amount",
-   "read_only": 1
+   "fieldname": "original_item",
+   "fieldtype": "Link",
+   "hidden": 1,
+   "label": "Original Item",
+   "options": "Item"
   }
  ],
  "istable": 1,
- "links": [],
- "modified": "2020-04-13 18:46:32.966416",
+ "modified": "2019-08-19 16:25:02.119660",
  "modified_by": "Administrator",
  "module": "Manufacturing",
  "name": "Work Order Item",
