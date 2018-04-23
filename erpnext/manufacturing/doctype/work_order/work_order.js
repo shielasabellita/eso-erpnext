@@ -157,7 +157,7 @@ frappe.ui.form.on("Work Order", {
 		}
 
 		if(frm.doc.required_items && frm.doc.allow_alternative_item) {
-			const has_alternative = frm.doc.required_items.find(i => i.allow_alternative_item === 1);
+			const has_alternative = frm.doc.required_items.find(i => i.set_alternative_items === 1);
 			if (frm.doc.docstatus == 0 && has_alternative) {
 				frm.add_custom_button(__('Alternate Item'), () => {
 					erpnext.utils.select_alternate_items({
@@ -167,7 +167,7 @@ frappe.ui.form.on("Work Order", {
 						child_doctype: "Work Order Item",
 						original_item_field: "original_item",
 						condition: (d) => {
-							if (d.allow_alternative_item) {return true;}
+							if (d.set_alternative_items) {return true;}
 						}
 					});
 				});
@@ -489,6 +489,101 @@ frappe.ui.form.on("Work Order Item", {
 		}
 	}
 });
+
+frappe.ui.form.on("Work Order Item", "switch_to_alt", function(frm, cdt, cdn) {
+	var d = locals[cdt][cdn]
+	cur_frm.select_workline_alternate_item({
+		current_item_selection: d.item_code,
+		item_code: d.original_item,
+		bom: cur_frm.doc.bom_no,
+		row: d
+	})
+});
+
+cur_frm.select_workline_alternate_item = function(opts) {
+	const row = opts.row;
+	const current_item_selection = opts.current_item_selection;
+	const item_code = opts.item_code;
+	const bom = opts.bom;
+
+	var headers = [ __("Alternative Item"), "" ]
+
+	cur_frm.alt_list_data = [];
+	cur_frm.render_alts_items = function(d, headers, data){
+		// render table of BOM Alternative Items
+		d.fields_dict.alt_items.$wrapper.html(
+			frappe.render_template('alternative_items_selector',
+				{'header_columns': headers, 'data': data}
+			)
+		)
+	}
+	const d = new frappe.ui.Dialog({
+		title: __("Select Alternate Items:") + item_code,
+		fields: [
+			{
+				fieldtype:'HTML',
+				fieldname:"alt_items",
+				label: __('Alternative Items'),
+			}
+		]
+	});
+
+	frappe.call({
+		method: 'erpnext.manufacturing.doctype.bom.bom.get_bomline_alternative_items',
+		freeze: true,
+		args: {
+			bom: bom,
+			parent_item_code: item_code,
+			amended_from: null
+		},
+		callback:function(r){
+			cur_frm.alt_list_data =  r.message || [];
+			if (current_item_selection != item_code) {
+				cur_frm.alt_list_data.push({
+					'alt_item':item_code
+				})
+			}
+			var current_item_selection_idx = cur_frm.alt_list_data.findIndex(item => item.alt_item === current_item_selection)
+			if (current_item_selection_idx != -1) {
+				cur_frm.alt_list_data.splice(current_item_selection_idx, 1)
+			}
+			cur_frm.render_alts_items(d, headers, cur_frm.alt_list_data)
+		}
+	})
+
+	cur_frm.select_row = function(i){
+		var selected_item = cur_frm.alt_list_data[i].alt_item;
+		frappe.call({
+			method: 'frappe.client.get',
+			args: {
+				doctype:'Item',
+				name: selected_item
+			},
+			callback: function(r){
+				frappe.model.set_value(row.doctype, row.name, "item_code", r.message.item_code);
+				frappe.model.set_value(row.doctype, row.name, "item_name", r.message.item_name);
+				frappe.model.set_value(row.doctype, row.name, "description", r.message.description);
+			}
+		})
+
+
+		frappe.call({
+			"method": "erpnext.stock.utils.get_latest_stock_qty",
+			args: {
+				item_code: selected_item,
+				warehouse: row.source_warehouse
+			},
+			callback: function (r) {
+				frappe.model.set_value(row.doctype, row.name,
+					"available_qty_at_source_warehouse", r.message);
+			}
+		})
+
+		d.hide()
+	}
+
+	d.show();
+}
 
 frappe.ui.form.on("Work Order Operation", {
 	workstation: function(frm, cdt, cdn) {
