@@ -141,6 +141,14 @@ class AccountsController(TransactionBase):
 		if not self.get("is_return") and not self.get("is_debit_note"):
 			self.validate_qty_is_not_zero()
 
+		# Newmatik trace:
+		# Currently, we allow updating PO and SO line qty to 0 for cancelled line.
+		# When it reaches to Invoice, the system does not allow 0 qty in the line item.
+		# They don't want to delete the line because they need it
+		# for record purposes that it was a cancelled line.
+
+		# Next line is commented out from core
+		# self.validate_qty_is_not_zero()
 		if self.get("_action") and self._action != "update_after_submit":
 			self.set_missing_values(for_validate=True)
 
