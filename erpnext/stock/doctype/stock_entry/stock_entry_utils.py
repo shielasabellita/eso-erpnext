@@ -117,6 +117,10 @@ def make_stock_entry(**args):
 		if not args.item:
 			args.item = "_Test Item"
 
+	# set stock entry source
+	if args.stock_entry_source:
+		s.stock_entry_source = args.stock_entry_source
+
 	s.company = args.company or erpnext.get_default_company()
 	s.purchase_receipt_no = args.purchase_receipt_no
 	s.delivery_note_no = args.delivery_note_no
