@@ -633,6 +633,7 @@
    "fieldname": "supplier_items",
    "fieldtype": "Table",
    "label": "Supplier Items",
+   "no_copy": 1,
    "options": "Item Supplier"
   },
   {
