@@ -1449,7 +1449,7 @@ def get_blanket_order_details(args):
 				select boi.rate as blanket_order_rate, bo.name as blanket_order
 				from `tabBlanket Order` bo, `tabBlanket Order Item` boi
 				where bo.company=%(company)s and boi.item_code=%(item_code)s
-					and bo.docstatus=1 and bo.name = boi.parent {0}
+					and bo.docstatus=1 and bo.status!='Closed' and bo.name = boi.parent {0}
 			""".format(
 				condition
 			),
