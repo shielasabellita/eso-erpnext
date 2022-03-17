@@ -227,25 +227,37 @@ def get_batches_by_oldest(item_code, warehouse):
 @frappe.whitelist()
 def split_batch(batch_no, item_code, warehouse, qty, company, new_batch_id=None):
 	"""Split the batch into a new batch"""
-	batch = frappe.get_doc(dict(doctype="Batch", item=item_code, batch_id=new_batch_id)).insert()
+	batch = frappe.get_doc(dict(doctype='Batch', item=item_code, batch_id=new_batch_id)).insert()
 
-	company = frappe.db.get_value(
-		"Stock Ledger Entry",
-		dict(item_code=item_code, batch_no=batch_no, warehouse=warehouse),
-		["company"],
-	)
-
-	stock_entry = frappe.get_doc(
-		dict(
-			doctype="Stock Entry",
-			purpose="Repack",
-			company=company,
-			items=[
-				dict(item_code=item_code, qty=float(qty or 0), s_warehouse=warehouse, batch_no=batch_no),
-				dict(item_code=item_code, qty=float(qty or 0), t_warehouse=warehouse, batch_no=batch.name),
-			],
-		)
-	)
+	company = frappe.db.get_value('Stock Ledger Entry', dict(
+			item_code=item_code,
+			batch_no=batch_no,
+			warehouse=warehouse
+		), ['company'])
+	cost_center = 'Haupt - ESODE'
+	if company == 'SC ESO Electronic S.R.L':
+		cost_center = 'Haupt - ESORO'
+	stock_entry = frappe.get_doc(dict(
+		doctype='Stock Entry',
+		purpose='Repack',
+		company=company,
+		items=[
+			dict(
+				item_code=item_code,
+				qty=float(qty or 0),
+				s_warehouse=warehouse,
+				batch_no=batch_no,
+				cost_center=cost_center
+			),
+			dict(
+				item_code=item_code,
+				qty=float(qty or 0),
+				t_warehouse=warehouse,
+				batch_no=batch.name,
+				cost_center=cost_center
+			),
+		]
+	))
 	stock_entry.set_stock_entry_type()
 	stock_entry.company = company
 	stock_entry.insert()
@@ -352,44 +364,5 @@ def validate_serial_no_with_batch(serial_nos, item_code):
 	serial_no_link = ",".join(get_link_to_form("Serial No", sn) for sn in serial_nos)
 
 	message = "Serial Nos" if len(serial_nos) > 1 else "Serial No"
-	frappe.throw(_("There is no batch found against the {0}: {1}").format(message, serial_no_link))
-
-
-def make_batch(args):
-	if frappe.db.get_value("Item", args.item, "has_batch_no"):
-		args.doctype = "Batch"
-		frappe.get_doc(args).insert().name
-
-
-@frappe.whitelist()
-def get_pos_reserved_batch_qty(filters):
-	import json
-
-	from frappe.query_builder.functions import Sum
-
-	if isinstance(filters, str):
-		filters = json.loads(filters)
-
-	p = frappe.qb.DocType("POS Invoice").as_("p")
-	item = frappe.qb.DocType("POS Invoice Item").as_("item")
-	sum_qty = Sum(item.qty).as_("qty")
-
-	reserved_batch_qty = (
-		frappe.qb.from_(p)
-		.from_(item)
-		.select(sum_qty)
-		.where(
-			(p.name == item.parent)
-			& (p.consolidated_invoice.isnull())
-			& (p.status != "Consolidated")
-			& (p.docstatus == 1)
-			& (item.docstatus == 1)
-			& (item.item_code == filters.get("item_code"))
-			& (item.warehouse == filters.get("warehouse"))
-			& (item.batch_no == filters.get("batch_no"))
-		)
-		.run()
-	)
-
-	flt_reserved_batch_qty = flt(reserved_batch_qty[0][0])
-	return flt_reserved_batch_qty
+	frappe.throw(_("There is no batch found against the {0}: {1}")
+		.format(message, serial_no_link))
