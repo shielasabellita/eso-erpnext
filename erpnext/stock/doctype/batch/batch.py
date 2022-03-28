@@ -225,7 +225,7 @@ def get_batches_by_oldest(item_code, warehouse):
 
 
 @frappe.whitelist()
-def split_batch(batch_no, item_code, warehouse, qty, new_batch_id=None):
+def split_batch(batch_no, item_code, warehouse, qty, company, new_batch_id=None):
 	"""Split the batch into a new batch"""
 	batch = frappe.get_doc(dict(doctype="Batch", item=item_code, batch_id=new_batch_id)).insert()
 
@@ -247,6 +247,7 @@ def split_batch(batch_no, item_code, warehouse, qty, new_batch_id=None):
 		)
 	)
 	stock_entry.set_stock_entry_type()
+	stock_entry.company = company
 	stock_entry.insert()
 	stock_entry.submit()
 

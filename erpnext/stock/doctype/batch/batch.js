@@ -61,10 +61,6 @@ frappe.ui.form.on('Batch', {
 								<div class='col-sm-3 small' style='padding-top: 3px;'>${d.warehouse}</div>
 								<div class='col-sm-3 small text-right' style='padding-top: 3px;'>${d.qty}</div>
 								<div class='col-sm-6'>
-									<button class='btn btn-default btn-xs btn-move' style='margin-right: 7px;'
-										data-qty = "${d.qty}"
-										data-warehouse = "${d.warehouse}">
-										${__('Move')}</button>
 									<button class='btn btn-default btn-xs btn-split'
 										data-qty = "${d.qty}"
 										data-warehouse = "${d.warehouse}">
@@ -123,6 +119,14 @@ frappe.ui.form.on('Batch', {
 							'default': $btn.attr('data-qty')
 						},
 						{
+							fieldname: 'company',
+							label: __('Company'),
+							fieldtype: 'Link',
+							options: 'Company',
+							rqd: 1, 
+							default: frappe.defaults.get_user_default("company")
+						},
+						{
 							fieldname: 'new_batch_id',
 							label: __('New Batch ID (Optional)'),
 							fieldtype: 'Data',
@@ -134,6 +138,7 @@ frappe.ui.form.on('Batch', {
 									item_code: frm.doc.item,
 									batch_no: frm.doc.name,
 									qty: data.qty,
+									company: data.company,
 									warehouse: $btn.attr('data-warehouse'),
 									new_batch_id: data.new_batch_id
 								},
