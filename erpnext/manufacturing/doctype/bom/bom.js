@@ -732,7 +732,7 @@ frappe.ui.form.on("BOM Item", "setup_alt_item_btn", function(frm, cdt, cdn) {
 			frm: frm,
 			cdn: cdn,
 			cdt: cdt,
-			item_code: d.item_code,
+			item_code: d.original_item,
 			has_alternatives: d.has_alternatives,
 			bom: d.parent,
 			amended_from: cur_frm.doc.amended_from || null,
