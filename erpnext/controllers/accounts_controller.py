@@ -2636,7 +2636,7 @@ def update_child_qty_rate(parent_doctype, trans_items, parent_doctype_name, chil
 		user = frappe.session.user
 		if child_item.item_code != d.get("item_code"):
 			if ("Sales Manager" in frappe.get_roles(user)):
-				if (child_item.billed_amt > 0 or child_item.delivered_qty > 0):
+				if (( 'billed_amt' in child_item.__dict__ and child_item.billed_amt > 0 ) or ('delivered_qty' in child_item.__dict__ and child_item.delivered_qty > 0)):
 					frappe.throw(_("Cannot update item since partial bill or partial delivery exists."))
 				else:
 					item_data = frappe.get_doc("Item", d.get("item_code"))
