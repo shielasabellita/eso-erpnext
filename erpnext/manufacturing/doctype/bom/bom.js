@@ -768,6 +768,7 @@ cur_frm.select_bomline_alternate_items = function(opts) {
 	cur_frm.set_alt_items = function(){
 		var selected_items = []
 		cur_frm.alt_list_data.forEach(function(item) {
+		if(item.alt_item != parent_item_code)
 		  selected_items.push(
 			  '<a targer="_blank" href="#Form/Item/' + item.alt_item +'">' + item.alt_item + '</a> ' + `(${item.qty})`
 		  )
@@ -838,6 +839,13 @@ cur_frm.select_bomline_alternate_items = function(opts) {
 		},
 		callback:function(r){
 			cur_frm.alt_list_data =  r.message || [];
+			
+
+			var current_item_selection_idx = cur_frm.alt_list_data.findIndex(item => item.alt_item === parent_item_code)
+			if (current_item_selection_idx != -1) {
+				cur_frm.alt_list_data.splice(current_item_selection_idx, 1)
+			}
+
 			cur_frm.render_alts_items(d, headers, cur_frm.alt_list_data)
 			cur_frm.set_alt_items()
 		}
