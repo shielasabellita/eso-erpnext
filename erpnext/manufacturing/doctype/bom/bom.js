@@ -732,6 +732,7 @@ frappe.ui.form.on("BOM Item", "setup_alt_item_btn", function(frm, cdt, cdn) {
 			frm: frm,
 			cdn: cdn,
 			cdt: cdt,
+			current_item: d.item_code,
 			item_code: d.original_item,
 			has_alternatives: d.has_alternatives,
 			bom: d.parent,
@@ -748,6 +749,7 @@ cur_frm.select_bomline_alternate_items = function(opts) {
 	const bom = opts.bom;
 	const cdn = opts.cdn;
 	const cdt = opts.cdt;
+	const current_item = opts.current_item;
 	const has_alternatives = opts.has_alternatives;
 	const init_qty = opts.init_qty.toFixed(2);
 	const parent_d = opts.parent_d;
@@ -768,7 +770,6 @@ cur_frm.select_bomline_alternate_items = function(opts) {
 	cur_frm.set_alt_items = function(){
 		var selected_items = []
 		cur_frm.alt_list_data.forEach(function(item) {
-		if(item.alt_item != parent_item_code)
 		  selected_items.push(
 			  '<a targer="_blank" href="#Form/Item/' + item.alt_item +'">' + item.alt_item + '</a> ' + `(${item.qty})`
 		  )
@@ -841,10 +842,8 @@ cur_frm.select_bomline_alternate_items = function(opts) {
 			cur_frm.alt_list_data =  r.message || [];
 			
 
-			var current_item_selection_idx = cur_frm.alt_list_data.findIndex(item => item.alt_item === parent_item_code)
-			if (current_item_selection_idx != -1) {
-				cur_frm.alt_list_data.splice(current_item_selection_idx, 1)
-			}
+			var current_item_selection_idx = cur_frm.alt_list_data.findIndex(item => item.alt_item === current_item)
+			cur_frm.alt_list_data.splice(current_item_selection_idx, 1)
 
 			cur_frm.render_alts_items(d, headers, cur_frm.alt_list_data)
 			cur_frm.set_alt_items()
