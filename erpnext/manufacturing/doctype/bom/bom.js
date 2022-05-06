@@ -758,7 +758,9 @@ cur_frm.select_bomline_alternate_items = function(opts) {
 	// headers for html rendering
 	var headers = [ __("Alternative Item"),  __("Qty"), __("")]
 	// Global in the scope. Holds the child of child.
-	cur_frm.alt_list_data = [];
+	if(!cur_frm.alt_list_data){
+		cur_frm.alt_list_data = [];
+	}
 	cur_frm.render_alts_items = function(d, headers, data){
 		// render table of BOM Alternative Items
 		d.fields_dict.alt_items.$wrapper.html(
@@ -843,8 +845,9 @@ cur_frm.select_bomline_alternate_items = function(opts) {
 			
 
 			var current_item_selection_idx = cur_frm.alt_list_data.findIndex(item => item.alt_item === current_item)
-			cur_frm.alt_list_data.splice(current_item_selection_idx, 1)
-
+			if (current_item_selection_idx != -1) {
+				cur_frm.alt_list_data.splice(current_item_selection_idx, 1)
+			}
 			cur_frm.render_alts_items(d, headers, cur_frm.alt_list_data)
 			cur_frm.set_alt_items()
 		}
