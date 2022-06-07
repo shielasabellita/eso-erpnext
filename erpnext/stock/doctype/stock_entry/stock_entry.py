@@ -1615,40 +1615,42 @@ class StockEntry(StockController):
 		return used_scrap_items
 
 	def get_unconsumed_raw_materials(self):
-		import math
 		wo = frappe.get_doc("Work Order", self.work_order)
 		wo_items = frappe.get_all('Work Order Item',
 			filters={'parent': self.work_order},
 			fields=["item_code", "required_qty", "consumed_qty"]
 			)
-		work_order_qty = wo.qty
+
 		for item in wo_items:
+			qty = item.required_qty
 			item_account_details = get_item_defaults(item.item_code, self.company)
 			# Take into account consumption if there are any.
 			if self.purpose == 'Manufacture':
-				wo_item_qty = item.transferred_qty or item.required_qty
-				req_qty_each = (
-					((wo_item_qty) - (item.consumed_qty)) /
-                              						((work_order_qty) - (wo.produced_qty))
-				)
+				req_qty_each = flt(item.required_qty / wo.qty)
+				if (flt(item.consumed_qty) != 0):
+					remaining_qty = flt(item.consumed_qty) - (flt(wo.produced_qty) * req_qty_each)
+					exhaust_qty = req_qty_each * wo.produced_qty
+					if remaining_qty > exhaust_qty:
+						if (remaining_qty/(req_qty_each * flt(self.fg_completed_qty))) >= 1:
+							qty = 0
+						else:
+							qty = (req_qty_each * flt(self.fg_completed_qty)) - remaining_qty
+				else:
+					qty = req_qty_each * flt(self.fg_completed_qty)
 
-				qty = req_qty_each * flt(self.fg_completed_qty)
-
-				qty = math.ceil(qty)
-
-				if qty > 0:
-					self.add_to_stock_entry_detail({
-						item.item_code: {
-							"from_warehouse": wo.wip_warehouse,
-							"to_warehouse": "",
-							"qty": qty,
-							"item_name": item.item_name,
-							"description": item.description,
-							"stock_uom": item_account_details.stock_uom,
-							"expense_account": item_account_details.get("expense_account"),
-							"cost_center": item_account_details.get("buying_cost_center"),
-						}
-					})
+			if qty > 0:
+				self.add_to_stock_entry_detail({
+					item.item_code: {
+						"from_warehouse": wo.wip_warehouse,
+						"to_warehouse": "",
+						"qty": qty,
+						"item_name": item.item_name,
+						"description": item.description,
+						"stock_uom": item_account_details.stock_uom,
+						"expense_account": item_account_details.get("expense_account"),
+						"cost_center": item_account_details.get("buying_cost_center"),
+					}
+				})
 
 	def get_transfered_raw_materials(self):
 		transferred_materials = frappe.db.sql(
@@ -2403,7 +2405,7 @@ def get_valuation_rate_for_finished_good_entry(work_order):
 @frappe.whitelist()
 def get_uom_details(item_code, uom, qty):
 	"""Returns dict `{"conversion_factor": [value], "transfer_qty": qty * [value]}`
-
+	
 	:param args: dict with `item_code`, `uom` and `qty`"""
 	conversion_factor = get_conversion_factor(item_code, uom).get("conversion_factor")
 
