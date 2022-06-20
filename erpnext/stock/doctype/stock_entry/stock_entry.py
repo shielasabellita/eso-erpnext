@@ -1628,6 +1628,7 @@ class StockEntry(StockController):
 			if self.purpose == 'Manufacture':
 				req_qty_each = flt(item.required_qty / wo.qty)
 				if (flt(item.consumed_qty) != 0):
+
 					remaining_qty = flt(item.consumed_qty) - (flt(wo.produced_qty) * req_qty_each)
 					exhaust_qty = req_qty_each * wo.produced_qty
 					if remaining_qty > exhaust_qty:
@@ -1635,6 +1636,9 @@ class StockEntry(StockController):
 							qty = 0
 						else:
 							qty = (req_qty_each * flt(self.fg_completed_qty)) - remaining_qty
+					else:
+						qty = (req_qty_each * flt(self.fg_completed_qty)) - remaining_qty
+
 				else:
 					qty = req_qty_each * flt(self.fg_completed_qty)
 
@@ -2405,7 +2409,7 @@ def get_valuation_rate_for_finished_good_entry(work_order):
 @frappe.whitelist()
 def get_uom_details(item_code, uom, qty):
 	"""Returns dict `{"conversion_factor": [value], "transfer_qty": qty * [value]}`
-	
+
 	:param args: dict with `item_code`, `uom` and `qty`"""
 	conversion_factor = get_conversion_factor(item_code, uom).get("conversion_factor")
 
@@ -2487,41 +2491,3 @@ def validate_sample_quantity(item_code, sample_quantity, qty, batch_no=None):
 		)
 		sample_quantity = qty_diff
 	return sample_quantity
-
-
-def get_supplied_items(purchase_order):
-	fields = [
-		"`tabStock Entry Detail`.`transfer_qty`",
-		"`tabStock Entry`.`is_return`",
-		"`tabStock Entry Detail`.`po_detail`",
-		"`tabStock Entry Detail`.`item_code`",
-	]
-
-	filters = [
-		["Stock Entry", "docstatus", "=", 1],
-		["Stock Entry", "purchase_order", "=", purchase_order],
-	]
-
-	supplied_item_details = {}
-	for row in frappe.get_all("Stock Entry", fields=fields, filters=filters):
-		if not row.po_detail:
-			continue
-
-		key = row.po_detail
-		if key not in supplied_item_details:
-			supplied_item_details.setdefault(
-				key, frappe._dict({"supplied_qty": 0, "returned_qty": 0, "total_supplied_qty": 0})
-			)
-
-		supplied_item = supplied_item_details[key]
-
-		if row.is_return:
-			supplied_item.returned_qty += row.transfer_qty
-		else:
-			supplied_item.supplied_qty += row.transfer_qty
-
-		supplied_item.total_supplied_qty = flt(supplied_item.supplied_qty) - flt(
-			supplied_item.returned_qty
-		)
-
-	return supplied_item_details
