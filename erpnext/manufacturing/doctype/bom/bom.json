@@ -328,7 +328,7 @@
     },
     {
       "fieldname": "base_scrap_material_cost",
-      "fieldtype": "Data",
+      "fieldtype": "Currency",
       "label": "Scrap Material Cost(Company Currency)",
       "no_copy": 1,
       "options": "Company:company:default_currency",
