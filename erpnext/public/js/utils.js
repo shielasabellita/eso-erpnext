@@ -567,9 +567,17 @@ erpnext.utils.update_child_items = function(opts) {
 		fields.splice(3, 0, {
 			fieldtype: 'Float',
 			fieldname: "conversion_factor",
-			in_list_view: 1,
+			in_list_view: 0,
 			label: __("Conversion Factor"),
 			precision: get_precision('conversion_factor')
+		})
+	}
+	if (frm.doc.doctype == 'Sales Order') {
+		fields.splice(2, 0, {
+			fieldtype: 'Date',
+			fieldname: "reqd_by_date",
+			in_list_view: 1,
+			label: __("Reqd By Date")
 		})
 	}
 
@@ -609,7 +617,25 @@ erpnext.utils.update_child_items = function(opts) {
 			refresh_field("items");
 		},
 		primary_action_label: __('Update')
-	}).show();
+	});
+
+	frm.doc[opts.child_docname].forEach(d => {
+		dialog.fields_dict.trans_items.df.data.push({
+			"docname": d.name,
+			"name": d.name,
+			"item_code": d.item_code,
+			"reqd_by_date": d.reqd_by_date,
+			"delivery_date": d.delivery_date,
+			"schedule_date": d.schedule_date,
+			"conversion_factor": d.conversion_factor,
+			"qty": d.qty,
+			"rate": d.rate,
+			"uom": d.uom
+		});
+		this.data = dialog.fields_dict.trans_items.df.data;
+		dialog.fields_dict.trans_items.grid.refresh();
+	})
+	dialog.show();
 }
 
 erpnext.utils.map_current_doc = function(opts) {
