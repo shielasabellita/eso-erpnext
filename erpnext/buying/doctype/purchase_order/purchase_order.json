@@ -13,11 +13,11 @@
   "naming_series",
   "supplier",
   "get_items_from_open_material_requests",
+  "company",
   "supplier_name",
   "apply_tds",
   "tax_withholding_category",
   "column_break1",
-  "company",
   "transaction_date",
   "schedule_date",
   "order_confirmation_no",
@@ -1170,11 +1170,10 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2022-04-26 12:16:38.694276",
+ "modified": "2022-07-25 07:12:43.525728",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Purchase Order",
- "naming_rule": "By \"Naming Series\" field",
  "owner": "Administrator",
  "permissions": [
   {
@@ -1221,7 +1220,6 @@
  "show_name_in_global_search": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": [],
  "timeline_field": "supplier",
  "title_field": "supplier_name",
  "track_changes": 1
