@@ -43,7 +43,8 @@
   "allow_alternative_item",
   "allow_transfer_for_manufacture",
   "include_item_in_manufacturing",
-  "original_item"
+  "original_item",
+  "sourced_by_supplier"
  ],
  "fields": [
   {
@@ -320,7 +321,13 @@
    "fieldname": "do_not_explode",
    "fieldtype": "Check",
    "label": "Do Not Explode"
-  }
+  },
+  {
+    "default": "0",
+    "fieldname": "sourced_by_supplier",
+    "fieldtype": "Check",
+    "label": "Sourced by Supplier"
+   }
  ],
  "idx": 1,
  "istable": 1,
