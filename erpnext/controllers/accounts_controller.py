@@ -2529,13 +2529,16 @@ def update_child_qty_rate(parent_doctype, trans_items, parent_doctype_name, chil
 		)
 
 	def validate_quantity(child_item, new_data):
-		if not flt(new_data.get("qty")):
-			frappe.throw(
-				_("Row # {0}: Quantity for Item {1} cannot be zero").format(
-					new_data.get("idx"), frappe.bold(new_data.get("item_code"))
-				),
-				title=_("Invalid Qty"),
-			)
+		""" Commented the validation added in V13 since in our v12 we dont have this validation
+			Also added the blanket order logic from our v12
+		"""
+		# if not flt(new_data.get("qty")):
+		# 	frappe.throw(
+		# 		_("Row # {0}: Quantity for Item {1} cannot be zero").format(
+		# 			new_data.get("idx"), frappe.bold(new_data.get("item_code"))
+		# 		),
+		# 		title=_("Invalid Qty"),
+		# 	)
 
 		if parent_doctype == "Sales Order" and flt(new_data.get("qty")) < flt(child_item.delivered_qty):
 			frappe.throw(_("Cannot set quantity less than delivered quantity"))
@@ -2544,6 +2547,9 @@ def update_child_qty_rate(parent_doctype, trans_items, parent_doctype_name, chil
 			child_item.received_qty
 		):
 			frappe.throw(_("Cannot set quantity less than received quantity"))
+
+		if parent_doctype == "Blanket Order" and flt(d.get("qty")) < flt(child_item.ordered_qty):
+			frappe.throw(_("Cannot set quantity less than ordered quantity"))
 
 	def should_update_supplied_items(doc) -> bool:
 		"""Subcontracted PO can allow following changes *after submit*:
