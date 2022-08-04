@@ -147,6 +147,7 @@
    "label": "Description"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "description",
    "fieldtype": "Text Editor",
    "label": "Description",
@@ -813,11 +814,9 @@
  "modified_by": "Administrator",
  "module": "Selling",
  "name": "Sales Order Item",
- "naming_rule": "Random",
  "owner": "Administrator",
  "permissions": [],
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": [],
  "track_changes": 1
 }
