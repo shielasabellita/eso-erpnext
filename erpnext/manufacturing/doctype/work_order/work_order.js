@@ -462,32 +462,32 @@ frappe.ui.form.on("Work Order Item", {
 			});
 		}
 	},
+	// function changing the quantity to 1 when using the switch alt item, 
+	// item_code: function(frm, cdt, cdn) {
+	// 	let row = locals[cdt][cdn];
 
-	item_code: function(frm, cdt, cdn) {
-		let row = locals[cdt][cdn];
-
-		if (row.item_code) {
-			frappe.call({
-				method: "erpnext.stock.doctype.item.item.get_item_details",
-				args: {
-					item_code: row.item_code,
-					company: frm.doc.company
-				},
-				callback: function(r) {
-					if (r.message) {
-						frappe.model.set_value(cdt, cdn, {
-							"required_qty": 1,
-							"item_name": r.message.item_name,
-							"description": r.message.description,
-							"source_warehouse": r.message.default_warehouse,
-							"allow_alternative_item": r.message.allow_alternative_item,
-							"include_item_in_manufacturing": r.message.include_item_in_manufacturing
-						});
-					}
-				}
-			});
-		}
-	}
+	// 	if (row.item_code) {
+	// 		frappe.call({
+	// 			method: "erpnext.stock.doctype.item.item.get_item_details",
+	// 			args: {
+	// 				item_code: row.item_code,
+	// 				company: frm.doc.company
+	// 			},
+	// 			callback: function(r) {
+	// 				if (r.message) {
+	// 					frappe.model.set_value(cdt, cdn, {
+	// 						"required_qty": 1,
+	// 						"item_name": r.message.item_name,
+	// 						"description": r.message.description,
+	// 						"source_warehouse": r.message.default_warehouse,
+	// 						"allow_alternative_item": r.message.allow_alternative_item,
+	// 						"include_item_in_manufacturing": r.message.include_item_in_manufacturing
+	// 					});
+	// 				}
+	// 			}
+	// 		});
+	// 	}
+	// }
 });
 
 frappe.ui.form.on("Work Order Item", "switch_to_alt", function(frm, cdt, cdn) {
