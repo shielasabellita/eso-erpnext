@@ -859,9 +859,11 @@ cur_frm.select_bomline_alternate_items = function(opts) {
 		cur_frm.set_alt_items()
 	}
 	cur_frm.update_qty = function(i){
-		cur_frm.alt_list_data[i].qty = $("#data-qty-"+i).val()
+		cur_frm.alt_list_data[i].qty = $("#data-qty-"+i).val();
 	}
 	d.show();
+	$(".modal").remove();
+
 }
 
 var toggle_operations = function(frm) {
