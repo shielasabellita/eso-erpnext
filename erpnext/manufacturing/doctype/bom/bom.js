@@ -764,7 +764,7 @@ cur_frm.select_bomline_alternate_items = function(opts) {
 	cur_frm.render_alts_items = function(d, headers, data){
 		// render table of BOM Alternative Items
 		d.fields_dict.alt_items.$wrapper.html(
-			frappe.render_template('alternative_items_selector',
+			frappe.render_template('alternative_items_selector_bom',
 				{'header_columns': headers, 'data': cur_frm.alt_list_data}
 			)
 		)
