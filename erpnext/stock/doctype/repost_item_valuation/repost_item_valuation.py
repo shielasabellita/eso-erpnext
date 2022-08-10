@@ -148,7 +148,7 @@ def repost(doc):
 		frappe.db.set_value(doc.doctype, doc.name, "error_log", message)
 
 		if not isinstance(e, RecoverableErrors):
-			notify_error_to_stock_managers(doc, message)
+			#notify_error_to_stock_managers(doc, message)
 			doc.set_status("Failed")
 	finally:
 		if not frappe.flags.in_test:
