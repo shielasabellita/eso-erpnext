@@ -464,9 +464,6 @@ erpnext.utils.update_child_items = function(opts) {
 	const frm = opts.frm;
 	const cannot_add_row = (typeof opts.cannot_add_row === 'undefined') ? true : opts.cannot_add_row;
 	const child_docname = (typeof opts.cannot_add_row === 'undefined') ? "items" : opts.child_docname;
-	const child_meta = frappe.get_meta(`${frm.doc.doctype} Item`);
-	const get_precision = (fieldname) => child_meta.fields.find(f => f.fieldname == fieldname).precision;
-
 	this.data = [];
 	const fields = [{
 		fieldtype:'Data',
@@ -480,67 +477,21 @@ erpnext.utils.update_child_items = function(opts) {
 		in_list_view: 1,
 		read_only: 0,
 		disabled: 0,
-		label: __('Item Code'),
-		get_query: function() {
-			let filters;
-			if (frm.doc.doctype == 'Sales Order') {
-				filters = {"is_sales_item": 1};
-			} else if (frm.doc.doctype == 'Purchase Order') {
-				if (frm.doc.is_subcontracted == "Yes") {
-					filters = {"is_sub_contracted_item": 1};
-				} else {
-					filters = {"is_purchase_item": 1};
-				}
-			}
-			return {
-				query: "erpnext.controllers.queries.item_query",
-				filters: filters
-			};
-		}
-	}, {
-		fieldtype:'Link',
-		fieldname:'uom',
-		options: 'UOM',
-		read_only: 0,
-		label: __('UOM'),
-		reqd: 1,
-		onchange: function () {
-			frappe.call({
-				method: "erpnext.stock.get_item_details.get_conversion_factor",
-				args: { item_code: this.doc.item_code, uom: this.value },
-				callback: r => {
-					if(!r.exc) {
-						if (this.doc.conversion_factor == r.message.conversion_factor) return;
-
-						const docname = this.doc.docname;
-						dialog.fields_dict.trans_items.df.data.some(doc => {
-							if (doc.docname == docname) {
-								doc.conversion_factor = r.message.conversion_factor;
-								dialog.fields_dict.trans_items.grid.refresh();
-								return true;
-							}
-						})
-					}
-				}
-			});
-		}
+		label: __('Item Code')
 	}, {
 		fieldtype:'Float',
 		fieldname:"qty",
 		default: 0,
 		read_only: 0,
 		in_list_view: 1,
-		label: __('Qty'),
-		precision: get_precision("qty")
+		label: __('Qty')
 	}, {
 		fieldtype:'Currency',
 		fieldname:"rate",
-		options: "currency",
 		default: 0,
 		read_only: 0,
 		in_list_view: 1,
-		label: __('Rate'),
-		precision: get_precision("rate")
+		label: __('Rate')
 	}];
 
 	if (frm.doc.doctype == 'Sales Order' || frm.doc.doctype == 'Purchase Order' ) {
@@ -555,10 +506,10 @@ erpnext.utils.update_child_items = function(opts) {
 			fieldtype: 'Float',
 			fieldname: "conversion_factor",
 			in_list_view: 0,
-			label: __("Conversion Factor"),
-			precision: get_precision('conversion_factor')
+			label: __("Conversion Factor")
 		})
 	}
+
 	if (frm.doc.doctype == 'Sales Order') {
 		fields.splice(2, 0, {
 			fieldtype: 'Date',
@@ -576,7 +527,7 @@ erpnext.utils.update_child_items = function(opts) {
 				fieldtype: "Table",
 				label: "Items",
 				cannot_add_rows: cannot_add_row,
-				in_place_edit: false,
+				in_place_edit: true,
 				reqd: 1,
 				data: this.data,
 				get_data: () => {
@@ -586,7 +537,8 @@ erpnext.utils.update_child_items = function(opts) {
 			},
 		],
 		primary_action: function() {
-			const trans_items = this.get_values()["trans_items"].filter((item) => !!item.item_code);
+			const trans_items = this.get_values()["trans_items"];
+			console.log(trans_items)
 			frappe.call({
 				method: 'erpnext.controllers.accounts_controller.update_child_qty_rate',
 				freeze: true,
@@ -607,18 +559,29 @@ erpnext.utils.update_child_items = function(opts) {
 	});
 
 	frm.doc[opts.child_docname].forEach(d => {
-		dialog.fields_dict.trans_items.df.data.push({
-			"docname": d.name,
-			"name": d.name,
-			"item_code": d.item_code,
-			"reqd_by_date": d.reqd_by_date,
-			"delivery_date": d.delivery_date,
-			"schedule_date": d.schedule_date,
-			"conversion_factor": d.conversion_factor,
-			"qty": d.qty,
-			"rate": d.rate,
-			"uom": d.uom
-		});
+		console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+		console.log(d)
+		if (frm.doc.doctype == 'Sales Order' || frm.doc.doctype == 'Purchase Order' ) {
+			dialog.fields_dict.trans_items.df.data.push({
+				"docname": d.name,
+				"name": d.name,
+				"item_code": d.item_code,
+				"reqd_by_date": d.reqd_by_date,
+				"delivery_date": d.delivery_date,
+				"schedule_date": d.schedule_date,
+				"conversion_factor": d.conversion_factor,
+				"qty": d.qty,
+				"rate": d.rate,
+			});
+		} else {
+			dialog.fields_dict.trans_items.df.data.push({
+				"docname": d.name,
+				"name": d.name,
+				"item_code": d.item_code,
+				"qty": d.qty,
+				"rate": d.rate,
+			});
+		}
 		this.data = dialog.fields_dict.trans_items.df.data;
 		dialog.fields_dict.trans_items.grid.refresh();
 	})
