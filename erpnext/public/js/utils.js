@@ -538,7 +538,6 @@ erpnext.utils.update_child_items = function(opts) {
 		],
 		primary_action: function() {
 			const trans_items = this.get_values()["trans_items"];
-			console.log(trans_items)
 			frappe.call({
 				method: 'erpnext.controllers.accounts_controller.update_child_qty_rate',
 				freeze: true,
@@ -559,8 +558,6 @@ erpnext.utils.update_child_items = function(opts) {
 	});
 
 	frm.doc[opts.child_docname].forEach(d => {
-		console.log("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-		console.log(d)
 		if (frm.doc.doctype == 'Sales Order' || frm.doc.doctype == 'Purchase Order' ) {
 			dialog.fields_dict.trans_items.df.data.push({
 				"docname": d.name,
