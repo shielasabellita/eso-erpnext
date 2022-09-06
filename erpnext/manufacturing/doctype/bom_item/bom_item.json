@@ -10,9 +10,10 @@
   "has_alternatives",
   "item_name",
   "operation",
+  "column_break_3",
+  "do_not_explode",
   "bom_no",
   "source_warehouse",
-  "column_break_3",
   "item_group",
   "set_alternative_items",
   "selected_alt_items",
@@ -64,12 +65,18 @@
    "label": "Item Name"
   },
   {
+   "depends_on": "eval:parent.with_operations == 1",
    "fieldname": "operation",
    "fieldtype": "Link",
    "label": "Item operation",
    "options": "Operation"
   },
   {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:!doc.do_not_explode",
    "fieldname": "bom_no",
    "fieldtype": "Link",
    "in_filter": 1,
@@ -86,10 +93,6 @@
    "fieldtype": "Link",
    "label": "Source Warehouse",
    "options": "Warehouse"
-  },
-  {
-   "fieldname": "column_break_3",
-   "fieldtype": "Column Break"
   },
   {
    "allow_on_submit": 1,
@@ -301,6 +304,12 @@
    "fieldname": "set_alternative_items",
    "fieldtype": "Check",
    "label": "Set Alternative Items"
+   },
+   {
+   "default": "0",
+   "fieldname": "do_not_explode",
+   "fieldtype": "Check",
+   "label": "Do Not Explode"
   }
  ],
  "idx": 1,
