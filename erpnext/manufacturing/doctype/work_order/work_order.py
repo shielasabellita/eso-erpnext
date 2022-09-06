@@ -1,9 +1,8 @@
 # Copyright (c) 2021, Frappe Technologies Pvt. Ltd. and Contributors
 # License: GNU General Public License v3. See license.txt
 
-import json
-
 import frappe
+import json
 from dateutil.relativedelta import relativedelta
 from frappe import _
 from frappe.model.document import Document
@@ -898,7 +897,6 @@ class WorkOrder(Document):
 			item_dict = get_bom_items_as_dict(
 				self.bom_no, self.company, qty=self.qty, fetch_exploded=self.use_multi_level_bom
 			)
-
 			if reset_only_qty:
 				for d in self.get("required_items"):
 					if item_dict.get(d.item_code):
@@ -907,22 +905,22 @@ class WorkOrder(Document):
 					if not d.operation:
 						d.operation = operation
 			else:
-				for item in sorted(item_dict.values(), key=lambda d: d["idx"] or float("inf")):
-					self.append(
-						"required_items",
-						{
-							"rate": item.rate,
-							"amount": item.rate * item.qty,
-							"operation": item.operation or operation,
-							"item_code": item.item_code,
-							"item_name": item.item_name,
-							"description": item.description,
-							"allow_alternative_item": item.allow_alternative_item,
-							"required_qty": item.qty,
-							"source_warehouse": item.source_warehouse or item.default_warehouse,
-							"include_item_in_manufacturing": item.include_item_in_manufacturing,
-						},
-					)
+				# Attribute a big number (999) to idx for sorting putpose in case idx is NULL
+				# For instance in BOM Explosion Item child table, the items coming from sub assembly items
+				for item in sorted(item_dict.values(), key=lambda d: d['idx'] or 9999):
+					self.append('required_items', {
+						'operation': item.operation,
+						'original_item': item.original_item,
+						'item_code': item.item_code,
+						'item_name': item.item_name,
+						'description': item.description,
+						'allow_alternative_item': item.allow_alternative_item,
+						'set_alternative_items': item.set_alternative_items,
+						'required_qty': item.qty,
+						'source_warehouse': item.source_warehouse or item.default_warehouse,
+						'include_item_in_manufacturing': item.include_item_in_manufacturing,
+						'set_alternative_items': item.set_alternative_items
+					})
 
 					if not self.project:
 						self.project = item.get("project")
