@@ -1692,13 +1692,21 @@ class StockEntry(StockController):
 			item_account_details = get_item_defaults(item.item_code, self.company)
 			# Take into account consumption if there are any.
 			if self.purpose == 'Manufacture':
-				wo_item_qty = item.transferred_qty or item.required_qty
-				req_qty_each = (
-					((wo_item_qty) - (item.consumed_qty)) /
-                              						((work_order_qty) - (wo.produced_qty))
-				)
+				req_qty_each = flt(item.required_qty / wo.qty)
+				if (flt(item.consumed_qty) != 0):
 
-				qty = req_qty_each * flt(self.fg_completed_qty)
+					remaining_qty = flt(item.consumed_qty) - (flt(wo.produced_qty) * req_qty_each)
+					exhaust_qty = req_qty_each * wo.produced_qty
+					if remaining_qty > exhaust_qty:
+						if (remaining_qty/(req_qty_each * flt(self.fg_completed_qty))) >= 1:
+							qty = 0
+						else:
+							qty = (req_qty_each * flt(self.fg_completed_qty)) - remaining_qty
+					else:
+						qty = (req_qty_each * flt(self.fg_completed_qty)) - remaining_qty
+
+				else:
+					qty = req_qty_each * flt(self.fg_completed_qty)
 
 				qty = math.ceil(qty)
 
