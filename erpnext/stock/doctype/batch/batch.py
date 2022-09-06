@@ -233,25 +233,37 @@ def get_batches_by_oldest(item_code, warehouse):
 @frappe.whitelist()
 def split_batch(batch_no, item_code, warehouse, qty, company, new_batch_id=None):
 	"""Split the batch into a new batch"""
-	batch = frappe.get_doc(dict(doctype="Batch", item=item_code, batch_id=new_batch_id)).insert()
+	batch = frappe.get_doc(dict(doctype='Batch', item=item_code, batch_id=new_batch_id)).insert()
 
-	company = frappe.db.get_value(
-		"Stock Ledger Entry",
-		dict(item_code=item_code, batch_no=batch_no, warehouse=warehouse),
-		["company"],
-	)
-
-	stock_entry = frappe.get_doc(
-		dict(
-			doctype="Stock Entry",
-			purpose="Repack",
-			company=company,
-			items=[
-				dict(item_code=item_code, qty=float(qty or 0), s_warehouse=warehouse, batch_no=batch_no),
-				dict(item_code=item_code, qty=float(qty or 0), t_warehouse=warehouse, batch_no=batch.name),
-			],
-		)
-	)
+	company = frappe.db.get_value('Stock Ledger Entry', dict(
+			item_code=item_code,
+			batch_no=batch_no,
+			warehouse=warehouse
+		), ['company'])
+	cost_center = 'Haupt - ESODE'
+	if company == 'SC ESO Electronic S.R.L':
+		cost_center = 'Haupt - ESORO'
+	stock_entry = frappe.get_doc(dict(
+		doctype='Stock Entry',
+		purpose='Repack',
+		company=company,
+		items=[
+			dict(
+				item_code=item_code,
+				qty=float(qty or 0),
+				s_warehouse=warehouse,
+				batch_no=batch_no,
+				cost_center=cost_center
+			),
+			dict(
+				item_code=item_code,
+				qty=float(qty or 0),
+				t_warehouse=warehouse,
+				batch_no=batch.name,
+				cost_center=cost_center
+			),
+		]
+	))
 	stock_entry.set_stock_entry_type()
 	stock_entry.company = company
 	stock_entry.insert()
@@ -358,7 +370,8 @@ def validate_serial_no_with_batch(serial_nos, item_code):
 	serial_no_link = ",".join(get_link_to_form("Serial No", sn) for sn in serial_nos)
 
 	message = "Serial Nos" if len(serial_nos) > 1 else "Serial No"
-	frappe.throw(_("There is no batch found against the {0}: {1}").format(message, serial_no_link))
+	frappe.throw(_("There is no batch found against the {0}: {1}")
+		.format(message, serial_no_link))
 
 
 def make_batch(args):
