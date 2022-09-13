@@ -98,7 +98,7 @@ class PurchaseInvoice(BuyingController):
 			self.make_batches("warehouse")
 
 		self.validate_release_date()
-		self.check_conversion_rate()
+		#self.check_conversion_rate()
 		self.validate_credit_to_acc()
 		self.clear_unallocated_advances("Purchase Invoice Advance", "advances")
 		self.check_on_hold_or_closed_status()
