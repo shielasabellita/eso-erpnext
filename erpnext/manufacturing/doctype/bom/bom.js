@@ -773,7 +773,7 @@ cur_frm.select_bomline_alternate_items = function(opts) {
 		var selected_items = []
 		cur_frm.alt_list_data.forEach(function(item) {
 		  selected_items.push(
-			  '<a target="_blank" href="/app/item' + item.alt_item +'">' + item.alt_item + '</a> ' + `(${item.qty})`
+			  '<a target="_blank" href="/app/item/' + item.alt_item +'">' + item.alt_item + '</a> ' + `(${item.qty})`
 		  )
 		});
 		frappe.model.set_value('BOM Item', cdn, 'selected_alt_items', selected_items.join());
