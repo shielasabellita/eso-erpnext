@@ -121,10 +121,9 @@
   {
    "fieldname": "supplier_part_no",
    "fieldtype": "Data",
-   "hidden": 1,
    "label": "Supplier Part Number",
    "print_hide": 1,
-   "read_only": 1
+   "reqd": 1
   },
   {
    "fieldname": "item_name",
@@ -852,7 +851,7 @@
  "index_web_pages_for_search": 1,
  "istable": 1,
  "links": [],
- "modified": "2022-08-02 05:28:15.259533",
+ "modified": "2022-09-27 19:27:34.956212",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Purchase Order Item",
