@@ -102,13 +102,16 @@ class RequestforQuotation(BuyingController):
 				self.validate_email_id(rfq_supplier)
 
 				# make new user if required
-				update_password_link, contact = self.update_supplier_contact(rfq_supplier, self.get_link())
+				""" commented the code for creating user on creation of request for quotation
+					as discussed in MS Teams it is not required to create account for suppliers
+				"""
+				# update_password_link, contact = self.update_supplier_contact(rfq_supplier, self.get_link())
 
 				self.update_supplier_part_no(rfq_supplier.supplier)
-				self.supplier_rfq_mail(rfq_supplier, update_password_link, self.get_link())
+				# self.supplier_rfq_mail(rfq_supplier, update_password_link, self.get_link())
 				rfq_supplier.email_sent = 1
-				if not rfq_supplier.contact:
-					rfq_supplier.contact = contact
+				# if not rfq_supplier.contact:
+				# 	rfq_supplier.contact = contact
 				rfq_supplier.save()
 
 	def get_link(self):
