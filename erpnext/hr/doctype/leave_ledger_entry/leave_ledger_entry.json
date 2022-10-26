@@ -66,6 +66,7 @@
    "options": "transaction_type"
   },
   {
+   "allow_on_submit": 1,
    "fieldname": "leaves",
    "fieldtype": "Float",
    "in_list_view": 1,
@@ -123,7 +124,7 @@
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2021-01-04 18:47:45.146652",
+ "modified": "2022-10-26 06:04:44.665033",
  "modified_by": "Administrator",
  "module": "HR",
  "name": "Leave Ledger Entry",
