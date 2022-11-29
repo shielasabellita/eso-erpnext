@@ -201,6 +201,59 @@ def make_sales_order(source_name, target_doc=None):
 		frappe.throw(_("Validity period of this quotation has ended."))
 	return _make_sales_order(source_name, target_doc)
 
+@frappe.whitelist()
+def make_blanket_order(source_name, target_doc=None,):
+	quotation = frappe.db.get_value(
+		"Quotation", source_name, ["transaction_date", "valid_till"], as_dict=1
+	)
+	if quotation.valid_till and (
+		quotation.valid_till < quotation.transaction_date or quotation.valid_till < getdate(nowdate())
+	):
+		frappe.throw(_("Validity period of this quotation has ended."))
+	return _make_blanket_order(source_name, target_doc)
+
+def _make_blanket_order(source_name, target_doc=None,ignore_permissions=False):
+	customer = _make_customer(source_name, ignore_permissions)
+
+	def set_missing_values(source, target):
+		target.blanket_order_type = "Selling"
+
+		if customer:
+			target.customer = customer.name
+			target.customer_name = customer.customer_name
+		if target.tc_name:
+			target.tc_name = source.tc_name
+			target.terms = source.terms
+		target.ignore_pricing_rule = 1
+		target.flags.ignore_permissions = ignore_permissions
+		target.run_method("set_missing_values")
+		target.run_method("calculate_taxes_and_totals")
+
+
+
+	doclist = get_mapped_doc(
+		"Quotation",
+		source_name,
+		{
+			"Quotation": {"doctype": "Blanket Order", "validation": {"docstatus": ["=", 1]}},
+			"Quotation Item": {
+				"doctype": "Blanket Order Item",
+				"condition": lambda doc: doc.qty > 0,
+			},
+			"Sales Taxes and Charges": {"doctype": "Sales Taxes and Charges", "add_if_empty": True},
+			"Sales Team": {"doctype": "Sales Team", "add_if_empty": True},
+			"Payment Schedule": {"doctype": "Payment Schedule", "add_if_empty": True},
+		},
+		target_doc,
+		set_missing_values,
+		ignore_permissions=ignore_permissions,
+	)
+
+
+	return doclist
+
+
+
 
 def _make_sales_order(source_name, target_doc=None, ignore_permissions=False):
 	customer = _make_customer(source_name, ignore_permissions)
