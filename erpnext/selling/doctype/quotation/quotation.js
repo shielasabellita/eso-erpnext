@@ -87,6 +87,9 @@ erpnext.selling.QuotationController = erpnext.selling.SellingController.extend({
 			if(!doc.valid_till || frappe.datetime.get_diff(doc.valid_till, frappe.datetime.get_today()) >= 0) {
 				cur_frm.add_custom_button(__('Sales Order'),
 					cur_frm.cscript['Make Sales Order'], __('Create'));
+				
+				cur_frm.add_custom_button(__('Blanket Order'),
+					cur_frm.cscript['Make Blanket Order'], __('Create'));
 			}
 
 			if(doc.status!=="Ordered") {
@@ -221,6 +224,13 @@ cur_frm.script_manager.make(erpnext.selling.QuotationController);
 cur_frm.cscript['Make Sales Order'] = function() {
 	frappe.model.open_mapped_doc({
 		method: "erpnext.selling.doctype.quotation.quotation.make_sales_order",
+		frm: cur_frm
+	})
+}
+
+cur_frm.cscript['Make Blanket Order'] = function() {
+	frappe.model.open_mapped_doc({
+		method: "erpnext.selling.doctype.quotation.quotation.make_blanket_order",
 		frm: cur_frm
 	})
 }
