@@ -491,6 +491,7 @@
   },
   {
    "allow_bulk_edit": 1,
+   "allow_on_submit": 1,
    "fieldname": "items",
    "fieldtype": "Table",
    "label": "Items",
@@ -1170,7 +1171,7 @@
  "idx": 105,
  "is_submittable": 1,
  "links": [],
- "modified": "2022-07-25 07:12:43.525728",
+ "modified": "2022-12-07 08:15:06.496366",
  "modified_by": "Administrator",
  "module": "Buying",
  "name": "Purchase Order",
