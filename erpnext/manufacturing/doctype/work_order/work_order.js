@@ -547,6 +547,8 @@ cur_frm.select_workline_alternate_item = function(opts) {
 			if (current_item_selection_idx != -1) {
 				cur_frm.alt_list_data.splice(current_item_selection_idx, 1)
 			}
+
+			cur_frm.alt_list_data = [...new Map(cur_frm.alt_list_data.reverse().map((m) => [m.alt_item, m])).values()];
 			cur_frm.render_alts_items(d, headers, cur_frm.alt_list_data)
 		}
 	})
