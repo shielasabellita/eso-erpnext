@@ -101,7 +101,7 @@ class StockController(AccountsController):
 			if is_material_issue:
 				continue
 
-			if self.purpose == "Material Transfer" and d.item_group in ["PCB (Leiterplatten)", "PCB (Leiterplatten) Customer Provided"]:
+			if self.doctype == "Stock Entry" and self.purpose == "Material Transfer" and d.item_group in ["PCB (Leiterplatten)", "PCB (Leiterplatten) Customer Provided"]:
 				continue
 
 			if flt(d.qty) > 0.0 and d.get("batch_no") and self.get("posting_date") and self.docstatus < 2:
