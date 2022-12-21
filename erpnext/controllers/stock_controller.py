@@ -101,6 +101,9 @@ class StockController(AccountsController):
 			if is_material_issue:
 				continue
 
+			if self.doctype == "Delivery Note" and d.item_group in ["PCB (Leiterplatten)", "PCB (Leiterplatten) Customer Provided"]:
+				continue
+
 			if self.doctype == "Stock Entry" and self.purpose == "Material Transfer" and d.item_group in ["PCB (Leiterplatten)", "PCB (Leiterplatten) Customer Provided"]:
 				continue
 
