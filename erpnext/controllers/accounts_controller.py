@@ -179,7 +179,7 @@ class AccountsController(TransactionBase):
 
 		self.validate_party()
 		self.validate_currency()
-		self.validate_party_account_currency()
+		#self.validate_party_account_currency()
 
 		if self.doctype in ["Purchase Invoice", "Sales Invoice"]:
 			pos_check_field = "is_pos" if self.doctype == "Sales Invoice" else "is_paid"
