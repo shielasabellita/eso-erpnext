@@ -36,14 +36,16 @@ class Attendance(Document):
 	def validate_attendance_date(self):
 		date_of_joining = frappe.db.get_value("Employee", self.employee, "date_of_joining")
 
+		# Commenting code to allow user to create "attendance" on future dates
+
 		# leaves can be marked for future dates
-		if (
-			self.status != "On Leave"
-			and not self.leave_application
-			and getdate(self.attendance_date) > getdate(nowdate())
-		):
-			frappe.throw(_("Attendance can not be marked for future dates"))
-		elif date_of_joining and getdate(self.attendance_date) < getdate(date_of_joining):
+		# if (
+		# 	self.status != "On Leave"
+		# 	and not self.leave_application
+		# 	and getdate(self.attendance_date) > getdate(nowdate())
+		# ):
+		# 	frappe.throw(_("Attendance can not be marked for future dates"))
+		if date_of_joining and getdate(self.attendance_date) < getdate(date_of_joining):
 			frappe.throw(_("Attendance date can not be less than employee's joining date"))
 
 	def validate_duplicate_record(self):
@@ -257,10 +259,12 @@ def get_unmarked_days(employee, from_date, to_date, exclude_holidays=0):
 
 	unmarked_days = []
 
-	while from_date <= to_date:
-		if from_date not in marked_days:
-			unmarked_days.append(from_date)
-
-		from_date = add_days(from_date, 1)
+	for date in dates_of_month:
+		date_time = get_datetime(date)
+		# Commenting code to display future dates in multiple select option
+		# if today.day <= date_time.day and today.month <= date_time.month:
+		# 	break
+		if date_time not in marked_days:
+			unmarked_days.append(date)
 
 	return unmarked_days
