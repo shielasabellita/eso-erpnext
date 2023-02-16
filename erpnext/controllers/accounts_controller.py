@@ -991,9 +991,9 @@ class AccountsController(TransactionBase):
 	def update_against_document_in_jv(self):
 		"""
 		Links invoice and advance voucher:
-		        1. cancel advance voucher
-		        2. split into multiple rows if partially adjusted, assign against voucher
-		        3. submit advance voucher
+				1. cancel advance voucher
+				2. split into multiple rows if partially adjusted, assign against voucher
+				3. submit advance voucher
 		"""
 
 		if self.doctype == "Sales Invoice":
@@ -2379,12 +2379,16 @@ def add_taxes_from_tax_template(child_item, parent_doc, db_insert=True):
 def set_order_defaults(
 	parent_doctype, parent_doctype_name, child_doctype, child_docname, trans_item
 ):
+	from newmatik.api.quotation import get_customer_item_list, get_customer_item
 	"""
 	Returns a Sales/Purchase Order Item child item containing the default values
 	"""
 	p_doc = frappe.get_doc(parent_doctype, parent_doctype_name)
 	child_item = frappe.new_doc(child_doctype, p_doc, child_docname)
 	item = frappe.get_doc("Item", trans_item.get("item_code"))
+
+	
+
 
 	for field in ("item_code", "item_name", "description", "item_group"):
 		child_item.update({field: item.get(field)})
@@ -2401,6 +2405,11 @@ def set_order_defaults(
 
 	if parent_doctype == 'Sales Order':
 		child_item.reqd_by_date = trans_item.get('reqd_by_date') or p_doc.reqd_by_date
+		
+		# get customer reference code
+		customer_items_list = get_customer_item_list(item.name, p_doc.customer_name)
+		if customer_items_list[0]:
+			child_item.customer_item_code = get_customer_item(customer_items_list[0])
 
 	if child_doctype == "Purchase Order Item":
 		# Initialized value will update in parent validation
@@ -2580,7 +2589,7 @@ def update_child_qty_rate(parent_doctype, trans_items, parent_doctype_name, chil
 
 		1. Change rate of subcontracting - regardless of other changes.
 		2. Change qty and/or add new items and/or remove items
-		        Exception: Transfer/Consumption is already made, qty change not allowed.
+				Exception: Transfer/Consumption is already made, qty change not allowed.
 		"""
 
 		supplied_items_processed = any(
