@@ -94,3 +94,23 @@ def get_warehouse_account(warehouse, warehouse_account=None):
 
 def get_company_default_inventory_account(company):
 	return frappe.get_cached_value("Company", company, "default_inventory_account")
+
+
+
+def get_warehouse_account_v2(warehouses):
+	whs = frappe.get_list("Warehouse", filters={"name": ["in", warehouses]}, fields=["name", "account", "parent_warehouse", "company", "is_group"], order_by="lft, rgt")
+	warehouses = {}
+	for w in whs:
+		if not w.account: 
+			w.account = get_warehouse_account(w)
+
+		cur = frappe.db.get_value("Account", w.account, "account_currency", cache=True)
+		w.update({
+			'account_currency': cur
+		})
+
+		warehouses.update({
+			w.name: w
+		})
+
+	return warehouses
