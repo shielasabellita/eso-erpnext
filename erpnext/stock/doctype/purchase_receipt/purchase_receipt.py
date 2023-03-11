@@ -16,6 +16,7 @@ from erpnext.assets.doctype.asset_category.asset_category import get_asset_categ
 from erpnext.buying.utils import check_on_hold_or_closed_status
 from erpnext.controllers.buying_controller import BuyingController
 from erpnext.stock.doctype.delivery_note.delivery_note import make_inter_company_transaction
+from erpnext.stock import get_warehouse_account_v2
 
 form_grid_templates = {"items": "templates/form_grid/item_grid.html"}
 
@@ -310,6 +311,7 @@ class PurchaseReceipt(BuyingController):
 		)
 
 		for d in self.get("items"):
+			warehouse_account = get_warehouse_account_v2([d.warehouse, self.supplier_warehouse, d.from_warehouse])
 			if d.item_code in stock_items and flt(d.valuation_rate) and flt(d.qty):
 				if warehouse_account.get(d.warehouse):
 					stock_value_diff = frappe.db.get_value(

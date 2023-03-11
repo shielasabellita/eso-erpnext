@@ -1183,8 +1183,8 @@ def repost_gle_for_stock_vouchers(
 	if not stock_vouchers:
 		return
 
-	if not warehouse_account:
-		warehouse_account = get_warehouse_account_map(company)
+	# if not warehouse_account:
+	# 	warehouse_account = get_warehouse_account_map(company)
 
 	precision = get_field_precision(frappe.get_meta("GL Entry").get_field("debit")) or 2
 
@@ -1198,7 +1198,7 @@ def repost_gle_for_stock_vouchers(
 		for voucher_type, voucher_no in stock_vouchers_chunk:
 			existing_gle = gle.get((voucher_type, voucher_no), [])
 			voucher_obj = frappe.get_doc(voucher_type, voucher_no)
-			expected_gle = voucher_obj.get_gl_entries(warehouse_account)
+			expected_gle = voucher_obj.get_gl_entries({})
 			if expected_gle:
 				if not existing_gle or not compare_existing_and_expected_gle(
 					existing_gle, expected_gle, precision

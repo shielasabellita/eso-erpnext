@@ -17,7 +17,7 @@ from erpnext.accounts.general_ledger import (
 )
 from erpnext.accounts.utils import get_fiscal_year
 from erpnext.controllers.accounts_controller import AccountsController
-from erpnext.stock import get_warehouse_account_map
+from erpnext.stock import get_warehouse_account_map, get_warehouse_account_v2
 from erpnext.stock.stock_ledger import get_items_to_be_repost
 
 
@@ -63,11 +63,11 @@ class StockController(AccountsController):
 			cint(erpnext.is_perpetual_inventory_enabled(self.company))
 			or provisional_accounting_for_non_stock_items
 		):
-			warehouse_account = get_warehouse_account_map(self.company)
+			# warehouse_account = get_warehouse_account_map(self.company)
 
 			if self.docstatus == 1:
 				if not gl_entries:
-					gl_entries = self.get_gl_entries(warehouse_account)
+					gl_entries = self.get_gl_entries({})
 				make_gl_entries(gl_entries, from_repost=from_repost)
 
 		elif self.doctype in ["Purchase Receipt", "Purchase Invoice"] and self.docstatus == 1:
@@ -135,8 +135,8 @@ class StockController(AccountsController):
 		self, warehouse_account=None, default_expense_account=None, default_cost_center=None
 	):
 
-		if not warehouse_account:
-			warehouse_account = get_warehouse_account_map(self.company)
+		# if not warehouse_account:
+		# 	warehouse_account = get_warehouse_account_map(self.company)
 
 		sle_map = self.get_stock_ledger_details()
 		voucher_details = self.get_voucher_details(default_expense_account, default_cost_center, sle_map)
@@ -149,6 +149,9 @@ class StockController(AccountsController):
 			sle_rounding_diff = 0.0
 			if sle_list:
 				for sle in sle_list:
+
+					warehouse_account = get_warehouse_account_v2([sle.warehouse, item_row.get("target_warehouse"), item_row.get("warehouse")])
+					# print(warehouse_account)
 					if warehouse_account.get(sle.warehouse):
 						# from warehouse account
 
@@ -205,6 +208,7 @@ class StockController(AccountsController):
 
 				expense_account = frappe.db.get_value("Company", self.company, "default_expense_account")
 
+				
 				gl_list.append(
 					self.get_gl_dict(
 						{
