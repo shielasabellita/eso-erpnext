@@ -519,7 +519,7 @@ erpnext.utils.update_child_items = function(opts) {
 		})
 	}
 
-	new frappe.ui.Dialog({
+	const dialog = new frappe.ui.Dialog({
 		title: __("Update Items"),
 		fields: [
 			{
