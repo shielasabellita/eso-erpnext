@@ -860,6 +860,7 @@ def get_leave_allocation_records(employee, date, leave_type=None):
 		)
 		.where(
 			(Ledger.from_date <= date)
+			& (Ledger.to_date >= date)
 			& (Ledger.docstatus == 1)
 			& (Ledger.transaction_type == "Leave Allocation")
 			& (Ledger.employee == employee)
