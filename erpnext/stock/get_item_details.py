@@ -1034,7 +1034,9 @@ def get_party_item_code(args, item_doc, out):
 			if len(customer_item_code) > 1:
 				# list reversed to select idx 1 in customer detail
 				for item in reversed(customer_item_code):
-					out.customer_item_code = item.ref_code
+					if item.is_default:
+						out.customer_item_code = item.ref_code
+						break
 			else:
 				out.customer_item_code = customer_item_code[0].ref_code
 		else:
