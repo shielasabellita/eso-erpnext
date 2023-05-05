@@ -772,14 +772,15 @@ cur_frm.select_bomline_alternate_items = function(opts) {
 	cur_frm.set_alt_items = function(){
 		var selected_items = []
 		cur_frm.alt_list_data.forEach(function(item) {
-		  selected_items.push(
-			  '<a target="_blank" href="/app/item/' + item.alt_item +'">' + item.alt_item + '</a> ' + `(${item.qty})`
-		  )
-		});
-		frappe.model.set_value('BOM Item', cdn, 'selected_alt_items', selected_items.join());
-	}
+            selected_items.push(
+                '<a target="_blank" href="/app/item/' + item.alt_item +'">' + item.alt_item + '</a> ' + `(${item.qty})`
+                )
+            });
+            frappe.model.set_value('BOM Item', cdn, 'selected_alt_items', selected_items.join());
+        }
+    var allready_selected = Object.keys(cur_frm.alt_list_data).map(key => cur_frm.alt_list_data[key].alt_item)
 	const d = new frappe.ui.Dialog({
-		title: __("Select Alternate Items:") + parent_item_code,
+		title: __("Select Alternate Items:") + current_item,
 		fields: [
 			{
 				fieldtype:'Link',
@@ -787,7 +788,7 @@ cur_frm.select_bomline_alternate_items = function(opts) {
 				options: 'Item',
 				label: __('Add Item'),
 				get_query: () => {
-					var allready_selected = Object.keys(cur_frm.alt_list_data).map(key => cur_frm.alt_list_data[key].alt_item)
+                    allready_selected.push(current_item)
 					return {
 			           filters: [
 			   			['Item', 'item_code', 'not in', allready_selected] // not in!!!
@@ -796,7 +797,7 @@ cur_frm.select_bomline_alternate_items = function(opts) {
 			    },
 				onchange: function() {
 				  var item_code = this.get_value();
-				  if (item_code) {
+				  if (item_code && !allready_selected.includes(item_code)) {
 						d.set_value("add_regular_item", null);
 						cur_frm.alt_list_data.push({
 							"alt_item": item_code,

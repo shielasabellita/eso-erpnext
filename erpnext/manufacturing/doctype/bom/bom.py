@@ -1066,7 +1066,7 @@ def get_bom_items_as_dict(
 			qty_field="stock_qty" if fetch_qty_in_stock_uom else "qty",
 			select_columns = """, bom_item.uom, bom_item.conversion_factor, bom_item.source_warehouse,
 				bom_item.idx, bom_item.operation, bom_item.include_item_in_manufacturing, bom_item.locations,
-				bom_item.description, bom_item.base_rate as rate , bom_item.set_alternative_items """)
+				bom_item.description, bom_item.base_rate as rate , bom_item.original_item as original_item, bom_item.set_alternative_items """)
 		items = frappe.db.sql(query, { "qty": qty, "bom": bom, "company": company }, as_dict=True)
 
 	for item in items:
@@ -1083,7 +1083,7 @@ def get_bom_items_as_dict(
 					item_dict[item][d[1]] = frappe.db.get_value("Company", company, d[2]) if d[2] else None
 	# BOM Alternative Items
 	for item, item_details in item_dict.items():
-		item_details['original_item'] = item_details['item_code']
+		item_details['original_item'] = item_details['original_item']
 		if item_details['set_alternative_items']:
 			item_details['alt_items'] = get_bomline_alternative_items(bom, item, None)
 	return item_dict

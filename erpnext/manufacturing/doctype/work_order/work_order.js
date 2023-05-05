@@ -518,7 +518,7 @@ cur_frm.select_workline_alternate_item = function(opts) {
 		)
 	}
 	const d = new frappe.ui.Dialog({
-		title: __("Select Alternate Items:") + item_code,
+		title: __("Select Alternate Items:") + row.item_code,
 		fields: [
 			{
 				fieldtype:'HTML',
