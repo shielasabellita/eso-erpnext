@@ -2334,6 +2334,9 @@ def get_supplier_block_status(party_name):
 
 
 def set_child_tax_template_and_map(item, child_item, parent_doc):
+	if parent_doc.doctype == 'Delivery Note':
+		parent_doc.transaction_date = parent_doc.posting_date
+
 	args = {
 		"item_code": item.item_code,
 		"posting_date": parent_doc.transaction_date,
@@ -2481,8 +2484,9 @@ def update_bin_on_delete(row, doctype):
 	if doctype == "Sales Order":
 		qty_dict["reserved_qty"] = get_reserved_qty(row.item_code, row.warehouse)
 	else:
-		if row.material_request_item:
-			qty_dict["indented_qty"] = get_indented_qty(row.item_code, row.warehouse)
+		if doctype != 'Delivery Note':
+			if row.material_request_item:
+				qty_dict["indented_qty"] = get_indented_qty(row.item_code, row.warehouse)
 
 		qty_dict["ordered_qty"] = get_ordered_qty(row.item_code, row.warehouse)
 
@@ -2556,7 +2560,7 @@ def update_child_qty_rate(parent_doctype, trans_items, parent_doctype_name, chil
 			)
 
 	def get_new_child_item(item_row):
-		child_doctype = "Sales Order Item" if parent_doctype == "Sales Order" else "Purchase Order Item" if parent_doctype == "Purchase Order" else "Blanket Order Item"
+		child_doctype = "Sales Order Item" if parent_doctype == "Sales Order" else "Purchase Order Item" if parent_doctype == "Purchase Order" else "Delivery Note Item" if parent_doctype == "Delivery Note" else "Blanket Order Item"
 		return set_order_defaults(
 			parent_doctype, parent_doctype_name, child_doctype, child_docname, item_row
 		)
@@ -2761,8 +2765,9 @@ def update_child_qty_rate(parent_doctype, trans_items, parent_doctype_name, chil
 		frappe.get_doc("Authorization Control").validate_approving_authority(
 			parent.doctype, parent.company, parent.base_grand_total
 		)
-
-		parent.set_payment_schedule()
+		if parent_doctype != "Delivery Note":
+			parent.set_payment_schedule()
+		
 		if parent_doctype == "Purchase Order":
 			parent.validate_minimum_order_qty()
 			parent.validate_budget()
@@ -2799,11 +2804,12 @@ def update_child_qty_rate(parent_doctype, trans_items, parent_doctype_name, chil
 	parent.reload()
 	validate_workflow_conditions(parent)
 
-	if parent_doctype != "Blanket Order":
+	if parent_doctype != "Blanket Order" and parent_doctype != 'Delivery Note':
 		parent.update_blanket_order()
 		parent.update_billing_percentage()
 		parent.set_status()
-
+	elif parent_doctype == "Delivery Note":
+		parent.save()
 
 @erpnext.allow_regional
 def validate_regional(doc):
