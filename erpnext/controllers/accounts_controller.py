@@ -2334,6 +2334,9 @@ def get_supplier_block_status(party_name):
 
 
 def set_child_tax_template_and_map(item, child_item, parent_doc):
+	if parent_doc.doctype == 'Delivery Note':
+		parent_doc.transaction_date = parent_doc.posting_date
+		
 	args = {
 		"item_code": item.item_code,
 		"posting_date": parent_doc.transaction_date,
