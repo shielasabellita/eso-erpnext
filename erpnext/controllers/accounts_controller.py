@@ -2647,10 +2647,12 @@ def update_child_qty_rate(parent_doctype, trans_items, parent_doctype_name, chil
 				prev_date, new_date = child_item.get("delivery_date"), d.get("delivery_date")
 			elif parent_doctype == "Purchase Order":
 				prev_date, new_date = child_item.get("schedule_date"), d.get("schedule_date")
-
+			print(child_item.idx, d.get("idx"))
 			rate_unchanged = prev_rate == new_rate
 			qty_unchanged = prev_qty == new_qty
 			uom_unchanged = prev_uom == new_uom
+			idx_unchanged = child_item.idx == d.get("idx")
+			print(idx_unchanged, child_item.idx, "----")
 			conversion_factor_unchanged = prev_con_fac == new_con_fac
 			any_conversion_factor_changed |= not conversion_factor_unchanged
 			date_unchanged = (
@@ -2662,6 +2664,7 @@ def update_child_qty_rate(parent_doctype, trans_items, parent_doctype_name, chil
 				and conversion_factor_unchanged
 				and uom_unchanged
 				and date_unchanged
+				and idx_unchanged
 			):
 				continue
 
@@ -2697,6 +2700,9 @@ def update_child_qty_rate(parent_doctype, trans_items, parent_doctype_name, chil
 		# 				 .format(child_item.idx, child_item.item_code))
 		# else:
 		child_item.rate = flt(d.get("rate"))
+
+		if d.get('idx'):
+			child_item.idx = d.get('idx')
 
 		if d.get("conversion_factor"):
 			if child_item.stock_uom == child_item.uom:
