@@ -1,0 +1,38 @@
+{
+ "add_total_row": 0,
+ "columns": [],
+ "creation": "2023-10-12 12:49:48.390434",
+ "disable_prepared_report": 0,
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [],
+ "idx": 0,
+ "is_standard": "Yes",
+ "json": "[{\"label\":\"Work Order\",\"fieldtype\":\"Link\",\"fieldname\":\"work_order\",\"options\":\"Work Order\",\"width\":150,\"id\":\"work_order\",\"name\":\"Work Order\",\"editable\":false,\"compareValue\":null},{\"fieldname\":\"ticket\",\"field\":\"ticket\",\"fieldtype\":\"Int\",\"label\":\"Ticket\",\"insert_after_index\":0,\"link_field\":\"work_order\",\"doctype\":\"Work Order\",\"width\":100,\"id\":\"ticket\",\"name\":\"Ticket\",\"editable\":false,\"compareValue\":null},{\"fieldname\":\"priority\",\"field\":\"priority\",\"fieldtype\":\"Select\",\"label\":\"Priority\",\"insert_after_index\":1,\"link_field\":\"work_order\",\"doctype\":\"Work Order\",\"options\":\"\\nForecast\\nPriority\\nStandard\\nExpress\",\"width\":100,\"id\":\"priority\",\"name\":\"Priority\",\"editable\":false,\"compareValue\":null},{\"label\":\"Item to Manufacture\",\"fieldtype\":\"Link\",\"fieldname\":\"item\",\"options\":\"Item\",\"width\":180,\"id\":\"item\",\"name\":\"Item to Manufacture\",\"editable\":false,\"compareValue\":null},{\"label\":\"Workflow Status\",\"fieldtype\":\"Data\",\"fieldname\":\"workflow_state\",\"width\":160,\"id\":\"workflow_state\",\"name\":\"Workflow Status\",\"editable\":false,\"compareValue\":null},{\"label\":\"Qty\",\"fieldtype\":\"Int\",\"fieldname\":\"qty\",\"width\":100,\"id\":\"qty\",\"name\":\"Qty\",\"editable\":false,\"compareValue\":null},{\"label\":\"Done\",\"fieldtype\":\"Int\",\"fieldname\":\"done\",\"width\":100,\"id\":\"done\",\"name\":\"Done\",\"editable\":false,\"compareValue\":null},{\"label\":\"Status Message\",\"fieldtype\":\"Data\",\"fieldname\":\"status_message\",\"width\":300,\"id\":\"status_message\",\"name\":\"Status Message\",\"editable\":false,\"compareValue\":null},{\"fieldname\":\"runtime\",\"field\":\"runtime\",\"fieldtype\":\"Float\",\"label\":\"Runtime (Hrs)\",\"insert_after_index\":7,\"link_field\":\"work_order\",\"doctype\":\"Work Order\",\"width\":100,\"id\":\"runtime\",\"name\":\"Runtime (Hrs)\",\"editable\":false,\"compareValue\":null},{\"fieldname\":\"no_of_assembled_lines\",\"field\":\"no_of_assembled_lines\",\"fieldtype\":\"Int\",\"label\":\"No of Assembled Lines\",\"insert_after_index\":8,\"link_field\":\"work_order\",\"doctype\":\"Work Order\",\"width\":100,\"id\":\"no_of_assembled_lines\",\"name\":\"No of Assembled Lines\",\"editable\":false,\"compareValue\":null},{\"fieldname\":\"total_no_of_components\",\"field\":\"total_no_of_components\",\"fieldtype\":\"Int\",\"label\":\"Total No of Components\",\"insert_after_index\":9,\"link_field\":\"work_order\",\"doctype\":\"Work Order\",\"width\":100,\"id\":\"total_no_of_components\",\"name\":\"Total No of Components\",\"editable\":false,\"compareValue\":null}]",
+ "letter_head": "Newmatik GmbH",
+ "modified": "2023-10-12 13:17:50.450567",
+ "modified_by": "Administrator",
+ "module": "Manufacturing",
+ "name": "Work Order Priority (Ticket)",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "Work Order",
+ "reference_report": "Work Order Priority",
+ "report_name": "Work Order Priority (Ticket)",
+ "report_type": "Custom Report",
+ "roles": [
+  {
+   "role": "Manufacturing User"
+  },
+  {
+   "role": "Stock User"
+  },
+  {
+   "role": "SMT Operator"
+  },
+  {
+   "role": "Manufacturing Manager"
+  }
+ ]
+}
