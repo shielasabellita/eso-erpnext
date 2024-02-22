@@ -2645,6 +2645,7 @@ def update_child_qty_rate(parent_doctype, trans_items, parent_doctype_name, chil
 
 			if parent_doctype == "Sales Order":
 				prev_date, new_date = child_item.get("delivery_date"), d.get("delivery_date")
+				reqd_prev_date, reqd_new_date = child_item.get("reqd_by_date"), d.get("reqd_by_date")
 			elif parent_doctype == "Purchase Order":
 				prev_date, new_date = child_item.get("schedule_date"), d.get("schedule_date")
 			rate_unchanged = prev_rate == new_rate
@@ -2653,15 +2654,22 @@ def update_child_qty_rate(parent_doctype, trans_items, parent_doctype_name, chil
 			idx_unchanged = child_item.idx == d.get("idx")
 			conversion_factor_unchanged = prev_con_fac == new_con_fac
 			any_conversion_factor_changed |= not conversion_factor_unchanged
+			
 			date_unchanged = (
 				prev_date == getdate(new_date) if prev_date and new_date else False
 			)  # in case of delivery note etc
+
+			
+			reqd_by_date_unchanged = (
+				reqd_prev_date == getdate(reqd_new_date) if reqd_prev_date and reqd_new_date else False
+			)
 			if (
 				rate_unchanged
 				and qty_unchanged
 				and conversion_factor_unchanged
 				and uom_unchanged
 				and date_unchanged
+				and reqd_by_date_unchanged
 				and idx_unchanged
 			):
 				continue
@@ -2719,6 +2727,9 @@ def update_child_qty_rate(parent_doctype, trans_items, parent_doctype_name, chil
 
 		if d.get("delivery_date") and parent_doctype == "Sales Order":
 			child_item.delivery_date = d.get("delivery_date")
+
+		if d.get("reqd_by_date") and parent_doctype == "Sales Order":
+			child_item.reqd_by_date = d.get("reqd_by_date")
 
 		if d.get("schedule_date") and parent_doctype == "Purchase Order":
 			child_item.schedule_date = d.get("schedule_date")
