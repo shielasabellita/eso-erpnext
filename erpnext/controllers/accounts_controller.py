@@ -2660,9 +2660,10 @@ def update_child_qty_rate(parent_doctype, trans_items, parent_doctype_name, chil
 			)  # in case of delivery note etc
 
 			
-			reqd_by_date_unchanged = (
-				reqd_prev_date == getdate(reqd_new_date) if reqd_prev_date and reqd_new_date else False
-			)
+			if parent_doctype == "Sales Order":
+				reqd_by_date_unchanged = (
+					reqd_prev_date == getdate(reqd_new_date) if reqd_prev_date and reqd_new_date else False
+				)
 			if (
 				rate_unchanged
 				and qty_unchanged
