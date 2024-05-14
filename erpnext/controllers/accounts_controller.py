@@ -2737,6 +2737,9 @@ def update_child_qty_rate(parent_doctype, trans_items, parent_doctype_name, chil
 		if d.get("expected_delivery_date") and parent_doctype == "Purchase Order":
 			child_item.expected_delivery_date = d.get("expected_delivery_date")
 
+		if d.get("weight_kg") and parent_doctype == "Delivery Note":
+			child_item.weight_kg = d.get("weight_kg")
+
 		if str(parent).find('BlanketOrder') == -1:
 			if flt(child_item.price_list_rate):
 				if flt(child_item.rate) > flt(child_item.price_list_rate):

@@ -493,6 +493,15 @@ erpnext.utils.update_child_items = function(opts) {
 		in_list_view: 1,
 		label: __('Rate')
 	}];
+    if (frm.doc.doctype == "Delivery Note") {
+        fields.splice(2, 0, {
+            fieldtype: 'Float',
+            fieldname: "weight_kg",
+            in_list_view: 1,
+            label: __("Weight kg"),
+            reqd: 1
+        })
+    }
 
 	if (frm.doc.doctype == 'Sales Order' || frm.doc.doctype == 'Purchase Order' ) {
 		fields.splice(2, 0, {
@@ -525,7 +534,6 @@ erpnext.utils.update_child_items = function(opts) {
 			label: __("Expected Delivery Date")
         })
     }
-
 	const dialog = new frappe.ui.Dialog({
 		title: __("Update Items"),
 		fields: [
@@ -575,6 +583,15 @@ erpnext.utils.update_child_items = function(opts) {
                 "expected_delivery_date": d.expected_delivery_date,
 				"schedule_date": d.schedule_date,
 				"conversion_factor": d.conversion_factor,
+				"qty": d.qty,
+				"rate": d.rate,
+			});
+        } else if (frm.doc.doctype == 'Delivery Note') {
+            dialog.fields_dict.trans_items.df.data.push({
+				"docname": d.name,
+				"name": d.name,
+				"item_code": d.item_code,
+                "weight_kg": d.weight_kg,
 				"qty": d.qty,
 				"rate": d.rate,
 			});
