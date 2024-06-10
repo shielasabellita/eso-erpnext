@@ -2483,7 +2483,7 @@ def update_bin_on_delete(row, doctype):
 
 	if doctype == "Sales Order":
 		qty_dict["reserved_qty"] = get_reserved_qty(row.item_code, row.warehouse)
-	if doctype == "Delivery Note":
+	elif doctype == "Delivery Note":
 		sle = frappe.db.get_value("Stock Ledger Entry", filters={'voucher_detail_no': row.name})
 		if sle:
 			sle_doc = frappe.get_doc("Stock Ledger Entry", sle)
